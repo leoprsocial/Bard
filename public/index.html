@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Tareas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>📊 Dashboard de Seguimiento de Tareas</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="mostrarModalNuevaTarea()">
+                    ➕ Nueva Tarea
+                </button>
+                <button class="btn btn-secondary" onclick="descargarExcel()">
+                    📥 Exportar a Excel
+                </button>
+            </div>
+        </header>
+
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-content">
+                    <h3>Total Tareas</h3>
+                    <p class="stat-number" id="total-tareas">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-content">
+                    <h3>Pendientes</h3>
+                    <p class="stat-number" id="pendientes">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🚀</div>
+                <div class="stat-content">
+                    <h3>En Progreso</h3>
+                    <p class="stat-number" id="en-progreso">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <h3>Completadas</h3>
+                    <p class="stat-number" id="completadas">0</p>
+                </div>
+            </div>
+
+            <div class="stat-card full-width">
+                <div class="stat-icon">📈</div>
+                <div class="stat-content">
+                    <h3>Progreso Promedio</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progreso-promedio" style="width: 0%"></div>
+                    </div>
+                    <p class="stat-number" id="progreso-numero">0%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters">
+            <select id="filtro-estado" onchange="aplicarFiltros()">
+                <option value="">Todos los estados</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="En Progreso">En Progreso</option>
+                <option value="Completada">Completada</option>
+                <option value="Cancelada">Cancelada</option>
+            </select>
+
+            <select id="filtro-prioridad" onchange="aplicarFiltros()">
+                <option value="">Todas las prioridades</option>
+                <option value="Urgente">Urgente</option>
+                <option value="Alta">Alta</option>
+                <option value="Media">Media</option>
+                <option value="Baja">Baja</option>
+            </select>
+
+            <select id="filtro-categoria" onchange="aplicarFiltros()">
+                <option value="">Todas las categorías</option>
+            </select>
+
+            <button class="btn btn-small" onclick="limpiarFiltros()">🔄 Limpiar filtros</button>
+        </div>
+
+        <!-- Lista de tareas -->
+        <div class="tasks-container">
+            <h2>Lista de Tareas</h2>
+            <div id="tareas-lista" class="tasks-list">
+                <!-- Las tareas se cargarán dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para nueva tarea -->
+    <div id="modal-tarea" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-titulo">Nueva Tarea</h2>
+                <span class="close" onclick="cerrarModal()">&times;</span>
+            </div>
+            <form id="form-tarea" onsubmit="guardarTarea(event)">
+                <div class="form-group">
+                    <label for="titulo">Título *</label>
+                    <input type="text" id="titulo" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" rows="3"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="estado">Estado</label>
+                        <select id="estado">
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="En Progreso">En Progreso</option>
+                            <option value="Completada">Completada</option>
+                            <option value="Cancelada">Cancelada</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prioridad">Prioridad</label>
+                        <select id="prioridad">
+                            <option value="Baja">Baja</option>
+                            <option value="Media" selected>Media</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Urgente">Urgente</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="asignado">Asignado a</label>
+                        <input type="text" id="asignado">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="categoria">Categoría</label>
+                        <select id="categoria">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fecha-inicio">Fecha Inicio</label>
+                        <input type="date" id="fecha-inicio">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fecha-fin">Fecha Fin</label>
+                        <input type="date" id="fecha-fin">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="progreso">Progreso: <span id="progreso-valor">0%</span></label>
+                    <input type="range" id="progreso" min="0" max="100" value="0"
+                           oninput="document.getElementById('progreso-valor').textContent = this.value + '%'">
+                </div>
+
+                <div class="form-group">
+                    <label for="etiquetas">Etiquetas (separadas por coma)</label>
+                    <input type="text" id="etiquetas" placeholder="backend, API, desarrollo">
+                </div>
+
+                <div class="form-group">
+                    <label for="notas">Notas</label>
+                    <textarea id="notas" rows="2"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
